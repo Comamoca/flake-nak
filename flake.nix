@@ -17,7 +17,10 @@
       flake-parts,
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ treefmt-nix.flakeModule ];
+      imports = [
+        treefmt-nix.flakeModule
+        inputs.flake-parts.flakeModules.easyOverlay
+      ];
       systems = import inputs.systems;
 
       perSystem =
@@ -25,11 +28,16 @@
           config,
           pkgs,
           system,
+          final,
           ...
         }:
         let
           stdenv = pkgs.stdenv;
           version = "0.7.6";
+
+          overlayAttrs = {
+            inherit (config.packages) nak;
+          };
 
           nak = pkgs.buildGo123Module rec {
             name = "nak";
@@ -71,6 +79,7 @@
           };
 
           packages.default = executable;
+          packages.nak = executable;
         };
     };
 }
